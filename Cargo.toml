@@ -1,0 +1,32 @@
+[package]
+name = "cargo-dusk-analyzer"
+version = "0.1.0"
+authors = ["zer0 <matteo@dusk.network>"]
+edition = "2018"
+autobins = false
+
+[lib]
+name = "dusk_analyzer"
+path = "src/lib.rs"
+
+[[bin]]
+name = "cargo-dusk-analyzer"
+path = "src/bin/main.rs"
+
+
+[dependencies]
+clap = "2.33.0"
+lazy_static = "1.4.0"
+cargo_metadata = "0.9.1"
+rustc_tools_util = "0.1"
+url = "2.1.1"
+thiserror = "1.0"
+anyhow = "1.0"
+console = "0.12"
+indicatif = "0.15"
+tracing = "0.1"
+tracing-subscriber = { version = "0.2.0", features = ["fmt"] }
+semver = "0.10.0"
+
+[build-dependencies]
+rustc_tools_util = "0.1"
