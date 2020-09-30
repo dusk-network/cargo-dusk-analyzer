@@ -17,15 +17,6 @@ pub fn get_main_package(metadata: &Metadata) -> Result<String, AnalyzeError> {
     }
 }
 
-pub fn get_invalid_local_deps(deps: &[Dependency]) -> Vec<&Dependency> {
-    let deps: Vec<&Dependency> = deps
-        .iter()
-        .filter(|d| d.req.to_string() == "*")
-        .filter(|d| d.source.is_none())
-        .collect();
-    deps
-}
-
 pub fn get_invalid_git_dusk_deps(deps: &[Dependency]) -> Vec<&Dependency> {
     let deps: Vec<&Dependency> = deps
         .iter()
@@ -54,7 +45,7 @@ fn get_tag_version_from_query(query: Option<&str>) -> Option<&str> {
             Some(ver) => ver
                 .strip_prefix("v.")
                 .or_else(|| ver.strip_prefix("v"))
-                .or_else(|| Some(ver)),
+                .or(Some(ver)),
             _ => None,
         },
         _ => None,

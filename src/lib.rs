@@ -10,7 +10,7 @@ mod errors;
 
 use cargo_metadata::Metadata;
 use console::Style;
-use deps::{get_invalid_git_dusk_deps, get_invalid_local_deps};
+use deps::get_invalid_git_dusk_deps;
 use tracing::error;
 
 pub use deps::get_main_package;
@@ -37,18 +37,9 @@ pub fn analyze_deps(metadata: Metadata) -> Result<(), AnalyzeError> {
 
     let p = metadata.packages[0].clone();
 
-    let local_deps = get_invalid_local_deps(&p.dependencies);
     let git_dusk_deps = get_invalid_git_dusk_deps(&p.dependencies);
-    let invalid_deps_count = git_dusk_deps.len() + local_deps.len();
+    let invalid_deps_count = git_dusk_deps.len();
     let has_invalid_deps = invalid_deps_count > 0;
-
-    local_deps.iter().for_each(|d| {
-        error!(
-            "{}: {} is just a local dependency",
-            red.apply_to("error"),
-            d.name
-        );
-    });
 
     git_dusk_deps.iter().for_each(|d| {
         error!(
