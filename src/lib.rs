@@ -25,7 +25,6 @@ const HEADER: &str = r#"// This Source Code Form is subject to the terms of the 
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 // Copyright (c) DUSK NETWORK. All rights reserved.
-
 "#;
 
 pub fn analyze_deps(metadata: Metadata) -> Result<(), AnalyzeError> {
@@ -70,8 +69,7 @@ pub fn analyze_license(manifest_path: &str) -> Result<(), AnalyzeError> {
     for entry in fs::read_dir(path)? {
         let entry = entry?;
         let path = entry.path();
-        if path.is_dir() && !path.ends_with("target") && !path.ends_with(".git")
-        {
+        if path.is_dir() && !path.ends_with("target") && !path.ends_with(".git") {
             let (f, t) = check_license_header(&path)?;
             failed += f;
             total += t;
@@ -107,7 +105,14 @@ fn check_license_header(dir: &Path) -> io::Result<(usize, usize)> {
             if ex == "rs" {
                 total += 1;
                 let contents = fs::read_to_string(path)?;
-                if !contents.starts_with(HEADER) {
+
+                let is_starting_with_license = contents.starts_with(HEADER);
+                let has_only_license = is_starting_with_license && contents.len() == HEADER.len();
+                let has_new_line = contents.len() > HEADER.len()
+                    && contents.chars().nth(HEADER.len()).unwrap() == '\n';
+                let has_license = has_only_license || (is_starting_with_license && has_new_line);
+
+                if !has_license {
                     failed += 1;
                     error!(
                         "{}: {:?} doesn't have the proper license header",
