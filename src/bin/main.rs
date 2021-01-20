@@ -22,12 +22,18 @@ fn run() -> Result<(), AnalyzeError> {
     cmd_meta.manifest_path(manifest_path);
     let metadata = cmd_meta.no_deps().exec()?;
 
-    let name = dusk_analyzer::get_main_package(&metadata)?;
+    if metadata.packages.is_empty() {
+        return Err(AnalyzeError::NoMainPackage);
+    }
 
-    println!("{:>12} {}", style("Checking").bright().green(), name);
+    for package in metadata.packages {
+        let name = package.name;
+        let manifest_path = package.manifest_path;
+        println!("{:>12} {}", style("Checking").bright().green(), name);
 
-    dusk_analyzer::analyze_deps(metadata)?;
-    dusk_analyzer::analyze_license(manifest_path)?;
+        dusk_analyzer::analyze_deps(&package.dependencies[..])?;
+        dusk_analyzer::analyze_license(manifest_path)?;
+    }
 
     Ok(())
 }

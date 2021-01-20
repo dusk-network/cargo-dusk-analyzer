@@ -8,17 +8,16 @@
 mod deps;
 mod errors;
 
-use cargo_metadata::Metadata;
+use cargo_metadata::Dependency;
 use console::Style;
 use deps::get_invalid_git_dusk_deps;
 use tracing::error;
 
-pub use deps::get_main_package;
 pub use errors::AnalyzeError;
 
 use std::fs;
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 const HEADER: &str = r#"// This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,16 +26,14 @@ const HEADER: &str = r#"// This Source Code Form is subject to the terms of the 
 // Copyright (c) DUSK NETWORK. All rights reserved.
 "#;
 
-pub fn analyze_deps(metadata: Metadata) -> Result<(), AnalyzeError> {
-    if metadata.packages.is_empty() {
+pub fn analyze_deps(deps: &[Dependency]) -> Result<(), AnalyzeError> {
+    if deps.is_empty() {
         return Ok(());
     }
 
     let red = Style::new().bright().red();
 
-    let p = metadata.packages[0].clone();
-
-    let git_dusk_deps = get_invalid_git_dusk_deps(&p.dependencies);
+    let git_dusk_deps = get_invalid_git_dusk_deps(deps);
     let invalid_deps_count = git_dusk_deps.len();
     let has_invalid_deps = invalid_deps_count > 0;
 
@@ -55,8 +52,8 @@ pub fn analyze_deps(metadata: Metadata) -> Result<(), AnalyzeError> {
     Ok(())
 }
 
-pub fn analyze_license(manifest_path: &str) -> Result<(), AnalyzeError> {
-    let path = Path::new(manifest_path).parent();
+pub fn analyze_license(manifest_path: PathBuf) -> Result<(), AnalyzeError> {
+    let path = manifest_path.parent();
     let path = path.unwrap();
 
     if !path.join("LICENSE").exists() {
@@ -69,7 +66,8 @@ pub fn analyze_license(manifest_path: &str) -> Result<(), AnalyzeError> {
     for entry in fs::read_dir(path)? {
         let entry = entry?;
         let path = entry.path();
-        if path.is_dir() && !path.ends_with("target") && !path.ends_with(".git") {
+        if path.is_dir() && !path.ends_with("target") && !path.ends_with(".git")
+        {
             let (f, t) = check_license_header(&path)?;
             failed += f;
             total += t;
@@ -107,10 +105,12 @@ fn check_license_header(dir: &Path) -> io::Result<(usize, usize)> {
                 let contents = fs::read_to_string(path)?;
 
                 let is_starting_with_license = contents.starts_with(HEADER);
-                let has_only_license = is_starting_with_license && contents.len() == HEADER.len();
+                let has_only_license =
+                    is_starting_with_license && contents.len() == HEADER.len();
                 let has_new_line = contents.len() > HEADER.len()
                     && contents.chars().nth(HEADER.len()).unwrap() == '\n';
-                let has_license = has_only_license || (is_starting_with_license && has_new_line);
+                let has_license = has_only_license
+                    || (is_starting_with_license && has_new_line);
 
                 if !has_license {
                     failed += 1;
