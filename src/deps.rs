@@ -4,18 +4,9 @@
 //
 // Copyright (c) DUSK NETWORK. All rights reserved.
 
-use crate::errors::AnalyzeError;
-use cargo_metadata::{Dependency, Metadata};
+use cargo_metadata::Dependency;
 use semver::Version;
 use url::Url;
-
-pub fn get_main_package(metadata: &Metadata) -> Result<String, AnalyzeError> {
-    if !metadata.packages.is_empty() {
-        Ok(metadata.packages[0].name.clone())
-    } else {
-        Err(AnalyzeError::NoMainPackage)
-    }
-}
 
 pub fn get_invalid_git_dusk_deps(deps: &[Dependency]) -> Vec<&Dependency> {
     let deps: Vec<&Dependency> = deps
