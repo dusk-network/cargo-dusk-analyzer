@@ -95,7 +95,8 @@ fn check_license_header(dir: &Path) -> io::Result<(usize, usize)> {
     for entry in fs::read_dir(dir)? {
         let entry = entry?;
         let path = entry.path();
-        if path.is_dir() {
+        if path.is_dir() && !path.ends_with("target") && !path.ends_with(".git")
+        {
             let (f, t) = check_license_header(&path)?;
             failed += f;
             total += t;
