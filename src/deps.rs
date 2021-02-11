@@ -13,6 +13,7 @@ pub fn get_invalid_git_dusk_deps(deps: &[Dependency]) -> Vec<&Dependency> {
         .iter()
         .filter(|d| d.req.to_string() == "*")
         .filter(|d| {
+            let name = &d.name;
             d.source
                 .as_ref()
                 .filter(|s| {
@@ -20,7 +21,7 @@ pub fn get_invalid_git_dusk_deps(deps: &[Dependency]) -> Vec<&Dependency> {
                 })
                 .and_then(|s| Url::parse(s).ok())
                 .map(|u| {
-                    get_tag_version_from_query(u.query())
+                    get_tag_version_from_query(name, u.query())
                         .and_then(|v| Version::parse(v).ok())
                         .map_or(true, |_| false)
                 })
@@ -30,11 +31,16 @@ pub fn get_invalid_git_dusk_deps(deps: &[Dependency]) -> Vec<&Dependency> {
     deps
 }
 
-fn get_tag_version_from_query(query: Option<&str>) -> Option<&str> {
+fn get_tag_version_from_query<'a>(
+    name: &str,
+    query: Option<&'a str>,
+) -> Option<&'a str> {
+    let name = format!("{}-", name);
     match query {
         Some(q) => match q.strip_prefix("tag=") {
             Some(ver) => ver
-                .strip_prefix("v.")
+                .strip_prefix(&name)
+                .or_else(|| ver.strip_prefix("v."))
                 .or_else(|| ver.strip_prefix("v"))
                 .or(Some(ver)),
             _ => None,
