@@ -26,6 +26,8 @@ fn run() -> Result<(), AnalyzeError> {
         return Err(AnalyzeError::NoMainPackage);
     }
 
+    dusk_analyzer::check_license_file(manifest_path)?;
+
     for package in metadata.packages {
         let name = package.name;
         let manifest_path = package.manifest_path;

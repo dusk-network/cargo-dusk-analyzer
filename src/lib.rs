@@ -52,13 +52,20 @@ pub fn analyze_deps(deps: &[Dependency]) -> Result<(), AnalyzeError> {
     Ok(())
 }
 
-pub fn analyze_license(manifest_path: PathBuf) -> Result<(), AnalyzeError> {
-    let path = manifest_path.parent();
-    let path = path.unwrap();
+pub fn check_license_file(manifest_path: &str) -> Result<(), AnalyzeError> {
+    let path = PathBuf::from(manifest_path);
+    let path = path.parent().unwrap();
 
     if !path.join("LICENSE").exists() {
         return Err(AnalyzeError::MissingRootLicense);
     }
+
+    Ok(())
+}
+
+pub fn analyze_license(manifest_path: PathBuf) -> Result<(), AnalyzeError> {
+    let path = manifest_path.parent();
+    let path = path.unwrap();
 
     let mut failed = 0;
     let mut total = 0;
