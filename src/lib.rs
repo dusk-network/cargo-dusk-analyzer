@@ -4,7 +4,6 @@
 //
 // Copyright (c) DUSK NETWORK. All rights reserved.
 
-#![feature(bool_to_option)]
 mod deps;
 mod errors;
 
